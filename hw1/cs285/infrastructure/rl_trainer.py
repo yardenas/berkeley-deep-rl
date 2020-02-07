@@ -1,6 +1,8 @@
 import time
+from builtins import float
 from collections import OrderedDict
 import pickle
+import json
 import numpy as np
 import tensorflow as tf
 import gym
@@ -17,7 +19,10 @@ MAX_VIDEO_LEN = 40
 class RL_Trainer(object):
 
     def __init__(self, params):
-
+        self.total_envsteps = 0
+        self.start_time = None
+        self.log_video = None
+        self.log_metrics = None
         #############
         ## INIT
         #############
@@ -42,7 +47,6 @@ class RL_Trainer(object):
 
         # Maximum length for episodes
         self.params['ep_len'] = self.params['ep_len'] or self.env.spec.max_episode_steps
-
         # Is this env continuous, or self.discrete?
         discrete = isinstance(self.env.action_space, gym.spaces.Discrete)
         self.params['agent_params']['discrete'] = discrete
@@ -72,7 +76,8 @@ class RL_Trainer(object):
 
         ## TODO initialize all of the TF variables (that were created by agent, etc.)
         ## HINT: use global_variables_initializer
-        TODO
+        tf.global_variables_initializer().run(session=self.sess)
+
 
     def run_training_loop(self, n_iter, collect_policy, eval_policy,
                         initial_expertdata=None, relabel_with_expert=False,
@@ -88,7 +93,6 @@ class RL_Trainer(object):
         """
 
         # init vars at beginning of training
-        self.total_envsteps = 0
         self.start_time = time.time()
 
         for itr in range(n_iter):
@@ -114,7 +118,7 @@ class RL_Trainer(object):
             self.total_envsteps += envsteps_this_batch
 
             # relabel the collected obs with actions from a provided expert policy
-            if relabel_with_expert and itr>=start_relabel_with_expert:
+            if relabel_with_expert and itr >= start_relabel_with_expert:
                 paths = self.do_relabel_with_expert(expert_policy, paths) ## TODO implement this function below
 
             # add collected data to replay buffer
@@ -156,12 +160,16 @@ class RL_Trainer(object):
                 # ``` return loaded_paths, 0, None ```
 
                 # collect data, batch_size is the number of transitions you want to collect.
+        if itr == 0:
+            with open(load_initial_expertdata, 'rb') as f:
+                paths = pickle.load(f)
+            return paths, 0, None
 
         # TODO collect data to be used for training
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = TODO
+        paths, envsteps_this_batch = sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -181,19 +189,22 @@ class RL_Trainer(object):
             # TODO sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = \
+                self.agent.sample(self.params['train_batch_size'])
 
             # TODO use the sampled data for training
             # HINT: use the agent's train function
-            # HINT: print or plot the loss for debugging!
+            # HINT: print or plot.py the loss for debugging!
+            self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
 
     def do_relabel_with_expert(self, expert_policy, paths):
         print("\nRelabelling collected observations with labels from an expert policy...")
 
-        # TODO relabel collected obsevations (from our policy) with labels from an expert policy
+        # TODO relabel collected observations (from our policy) with labels from an expert policy
         # HINT: query the policy (using the get_action function) with paths[i]["observation"]
         # and replace paths[i]["action"] with these expert labels
-
+        for path in paths:
+            path['action'] = expert_policy.get_action(path['observation'])
         return paths
 
     ####################################
@@ -203,7 +214,8 @@ class RL_Trainer(object):
 
         # collect eval trajectories, for logging
         print("\nCollecting data for eval...")
-        eval_paths, eval_envsteps_this_batch = sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
+        eval_paths, eval_envsteps_this_batch = \
+            sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
 
         # save eval rollouts as videos in tensorboard event file
         if self.log_video and train_video_paths != None:
@@ -214,7 +226,7 @@ class RL_Trainer(object):
             print('\nSaving train rollouts as videos...')
             self.logger.log_paths_as_videos(train_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
                                             video_title='train_rollouts')
-            self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps,max_videos_to_save=MAX_NVIDEO,
+            self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
                                              video_title='eval_rollouts')
 
         # save eval metrics
@@ -229,30 +241,35 @@ class RL_Trainer(object):
 
             # decide what to log
             logs = OrderedDict()
-            logs["Eval_AverageReturn"] = np.mean(eval_returns)
-            logs["Eval_StdReturn"] = np.std(eval_returns)
-            logs["Eval_MaxReturn"] = np.max(eval_returns)
-            logs["Eval_MinReturn"] = np.min(eval_returns)
-            logs["Eval_AverageEpLen"] = np.mean(eval_ep_lens)
+            logs["Eval_AverageReturn"] = float(np.mean(eval_returns))
+            logs["Eval_StdReturn"] = float(np.std(eval_returns))
+            logs["Eval_MaxReturn"] = float(np.max(eval_returns))
+            logs["Eval_MinReturn"] = float(np.min(eval_returns))
+            logs["Eval_AverageEpLen"] = float(np.mean(eval_ep_lens))
 
-            logs["Train_AverageReturn"] = np.mean(train_returns)
-            logs["Train_StdReturn"] = np.std(train_returns)
-            logs["Train_MaxReturn"] = np.max(train_returns)
-            logs["Train_MinReturn"] = np.min(train_returns)
-            logs["Train_AverageEpLen"] = np.mean(train_ep_lens)
+            logs["Train_AverageReturn"] = float(np.mean(train_returns))
+            logs["Train_StdReturn"] = float(np.std(train_returns))
+            logs["Train_MaxReturn"] = float(np.max(train_returns))
+            logs["Train_MinReturn"] = float(np.min(train_returns))
+            logs["Train_AverageEpLen"] = float(np.mean(train_ep_lens))
 
-            logs["Train_EnvstepsSoFar"] = self.total_envsteps
-            logs["TimeSinceStart"] = time.time() - self.start_time
-
+            logs["Train_EnvstepsSoFar"] = float(self.total_envsteps)
+            logs["TimeSinceStart"] = float(time.time() - self.start_time)
 
             if itr == 0:
-                self.initial_return = np.mean(train_returns)
-            logs["Initial_DataCollection_AverageReturn"] = self.initial_return
+                initial_return = float(np.mean(train_returns))
+                logs["Initial_DataCollection_AverageReturn"] = float(initial_return)
 
             # perform the logging
+            self.logger.plot_graph(self.sess)
             for key, value in logs.items():
                 print('{} : {}'.format(key, value))
                 self.logger.log_scalar(value, key, itr)
-            print('Done logging...\n\n')
 
+            logs['Train_Loss'] = [float(value) for index, value in enumerate(self.agent.report_training())
+                                  if index % 10 == 0]
+            metric_file = os.path.join(self.params['logdir'], 'metrics_{}.json'.format(itr))
+            with open(metric_file, 'w') as file:
+                json.dump(logs, file)
+            print('Done logging...\n\n')
             self.logger.flush()

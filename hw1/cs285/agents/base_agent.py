@@ -13,3 +13,6 @@ class BaseAgent(object):
 
     def sample(self, batch_size):
         raise NotImplementedError
+
+    def report_training(self):
+        raise  NotImplementedError

@@ -1,5 +1,6 @@
 import os
 from tensorboardX import SummaryWriter
+from tensorflow import summary
 import numpy as np
 
 class Logger:
@@ -15,7 +16,7 @@ class Logger:
         self._summ_writer.add_scalar('{}'.format(name), scalar, step_)
 
     def log_scalars(self, scalar_dict, group_name, step, phase):
-        """Will log all scalars in the same plot."""
+        """Will log all scalars in the same plot.py."""
         self._summ_writer.add_scalars('{}_{}'.format(group_name, phase), scalar_dict, step)
 
     def log_image(self, image, name, step):
@@ -68,6 +69,13 @@ class Logger:
 
     def flush(self):
         self._summ_writer.flush()
+
+    def plot_graph(self, sess):
+        """exports a graph to tensorboard"""
+        w = summary.FileWriter(self._log_dir, sess.graph)
+        w.close()
+
+
 
 
 

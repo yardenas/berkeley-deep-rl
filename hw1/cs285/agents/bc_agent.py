@@ -15,6 +15,7 @@ class BCAgent(BaseAgent):
         self.env = env
         self.sess = sess
         self.agent_params = agent_params
+        self.loss_collection = []
 
         # actor/policy
         self.actor = MLPPolicySL(sess,
@@ -32,10 +33,17 @@ class BCAgent(BaseAgent):
     def train(self, ob_no, ac_na, re_n, next_ob_no, terminal_n):
         # training a BC agent refers to updating its actor using
         # the given observations and corresponding action labels
-        self.actor.update(ob_no, ac_na) ## TODO: look in here and implement this
+        loss = self.actor.update(ob_no, ac_na) ## TODO: look in here and implement this
+        # if len(self.loss_collection) % 10 == 0:
+        self.loss_collection.append(loss)
 
     def add_to_replay_buffer(self, paths):
         self.replay_buffer.add_rollouts(paths)
 
     def sample(self, batch_size):
         return self.replay_buffer.sample_random_data(batch_size) ## TODO: look in here and implement this
+
+    def report_training(self):
+        last_training = self.loss_collection.copy()
+        self.loss_collection.clear()
+        return last_training
