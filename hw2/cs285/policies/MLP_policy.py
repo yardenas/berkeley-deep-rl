@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib as plt
 import tensorflow as tf
 from .base_policy import BasePolicy
 from cs285.infrastructure.tf_utils import build_mlp
@@ -108,7 +109,16 @@ class MLPPolicy(BasePolicy):
     # query the policy with observation(s) to get selected action(s)
     def get_action(self, obs):
 
-        # TODO: GETTHIS from HW1
+        if len(obs.shape) > 1:
+            observation = obs
+        else:
+            observation = obs[None]
+
+        # TODO return the action that the policy prescribes
+        # HINT1: you will need to call self.sess.run
+        # HINT2: the tensor we're interested in evaluating is self.sample_ac
+        # HINT3: in order to run self.sample_ac, it will need observation fed into the feed_dict
+        return self.sess.run(self.sample_ac, feed_dict={self.observations_pl: observation})
 
 #####################################################
 #####################################################
