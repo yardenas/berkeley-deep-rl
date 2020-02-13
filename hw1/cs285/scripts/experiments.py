@@ -7,11 +7,11 @@ import shlex
 import glob
 import json
 import matplotlib.pyplot as plt
-# import seaborn as sns
+import seaborn as sns
 
 
 def plot_mean_std(means, stds, x=None, label=None, c='y'):
-    # sns.set(style="darkgrid")
+    sns.set(style="darkgrid")
     means = np.array(means)
     stds = np.array(stds)
     x = np.array(x) if x is not None else np.arange(len(means))
