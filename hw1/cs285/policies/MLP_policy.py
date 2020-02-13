@@ -57,7 +57,6 @@ class MLPPolicy(BasePolicy):
         # TODO implement this build_mlp function in tf_utils
         mean = build_mlp(self.observations_pl, output_size=self.ac_dim, scope='continuous_logits', n_layers=self.n_layers, size=self.size)
         logstd = tf.Variable(tf.zeros(self.ac_dim), name='logstd')
-        print(mean)
         self.parameters = (mean, logstd)
 
     def build_action_sampling(self):
