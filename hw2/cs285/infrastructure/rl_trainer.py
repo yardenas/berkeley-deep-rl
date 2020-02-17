@@ -3,6 +3,7 @@ import time
 from collections import OrderedDict
 import pickle
 import numpy as np
+import json
 import tensorflow as tf
 import gym
 import os
@@ -150,19 +151,6 @@ class RL_Trainer(object):
             envsteps_this_batch: the sum over the numbers of environment steps in paths
             train_video_paths: paths which also contain videos for visualization purposes
         """
-
-        # TODO decide whether to load training data or use
-        # HINT: depending on if it's the first iteration or not,
-            # decide whether to either
-                # load the data. In this case you can directly return as follows
-                # ``` return loaded_paths, 0, None ```
-
-                # collect data, batch_size is the number of transitions you want to collect.
-        if itr == 0:
-            with open(load_initial_expertdata, 'rb') as f:
-                paths = pickle.load(f)
-            return paths, 0, None
-
         # TODO collect data to be used for training
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
@@ -259,13 +247,10 @@ class RL_Trainer(object):
                 logs["Initial_DataCollection_AverageReturn"] = float(initial_return)
 
             # perform the logging
-            self.logger.plot_graph(self.sess)
             for key, value in logs.items():
                 print('{} : {}'.format(key, value))
                 self.logger.log_scalar(value, key, itr)
 
-            logs['Train_Loss'] = [float(value) for index, value in enumerate(self.agent.report_training())
-                                  if index % 10 == 0]
             metric_file = os.path.join(self.params['logdir'], 'metrics_{}.json'.format(itr))
             with open(metric_file, 'w') as file:
                 json.dump(logs, file)
