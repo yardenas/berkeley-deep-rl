@@ -71,7 +71,7 @@ def main():
     parser.add_argument('--n_layers', '-l', type=int, default=2)
     parser.add_argument('--size', '-s', type=int, default=64)
 
-    parser.add_argument('--ep_len', type=int) #students shouldn't change this away from env's default
+    parser.add_argument('--ep_len', type=int)  #students shouldn't change this away from env's default
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--use_gpu', '-gpu', action='store_true')
     parser.add_argument('--which_gpu', '-gpu_id', default=0)

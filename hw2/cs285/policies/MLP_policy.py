@@ -5,6 +5,7 @@ from .base_policy import BasePolicy
 from cs285.infrastructure.tf_utils import build_mlp
 import tensorflow_probability as tfp
 
+
 class MLPPolicy(BasePolicy):
 
     def __init__(self,
@@ -79,11 +80,11 @@ class MLPPolicy(BasePolicy):
 
     def define_log_prob(self):
         if self.discrete:
-            #log probability under a categorical distribution
+            # log probability under a categorical distribution
             logits_na = self.parameters
             self.logprob_n = tf.distributions.Categorical(logits=logits_na).log_prob(self.actions_pl)
         else:
-            #log probability under a multivariate gaussian
+            # log probability under a multivariate gaussian
             mean, logstd = self.parameters
             self.logprob_n = tfp.distributions.MultivariateNormalDiag(
                 loc=mean, scale_diag=tf.exp(logstd)).log_prob(self.actions_pl)
@@ -113,11 +114,6 @@ class MLPPolicy(BasePolicy):
             observation = obs
         else:
             observation = obs[None]
-
-        # TODO return the action that the policy prescribes
-        # HINT1: you will need to call self.sess.run
-        # HINT2: the tensor we're interested in evaluating is self.sample_ac
-        # HINT3: in order to run self.sample_ac, it will need observation fed into the feed_dict
         return self.sess.run(self.sample_ac, feed_dict={self.observations_pl: observation})
 
 #####################################################
@@ -127,8 +123,10 @@ class MLPPolicy(BasePolicy):
 
     # TODO: GETTHIS from HW1 (or comment it out, since you don't need it for this homework)
 
+
 #####################################################
 #####################################################
+
 
 class MLPPolicyPG(MLPPolicy):
 
@@ -167,20 +165,20 @@ class MLPPolicyPG(MLPPolicy):
             # to get [Q_t - b_t]
         # HINT4: don't forget that we need to MINIMIZE this self.loss
             # but the equation above is something that should be maximized
-        self.loss = tf.reduce_sum(TODO)
+
+        self.loss = tf.reduce_mean(tf.negative(tf.multiply(self.logprob_n, self.adv_n)))
 
         # TODO: define what exactly the optimizer should minimize when updating the policy
-        self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(TODO)
+        self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
         if self.nn_baseline:
             # TODO: define the loss that should be optimized for training the baseline
             # HINT1: use tf.losses.mean_squared_error, similar to SL loss from hw1
             # HINT2: we want predictions (self.baseline_prediction) to be as close as possible to the labels (self.targets_n)
                 # see 'update' function below if you don't understand what's inside self.targets_n
-            self.baseline_loss = TODO
-
+            self.baseline_loss = tf.losses.mean_squared_error(self.targets_n, self.baseline_prediction)
             # TODO: define what exactly the optimizer should minimize when updating the baseline
-            self.baseline_update_op = tf.train.AdamOptimizer(self.learning_rate).minimize(TODO)
+            self.baseline_update_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.baseline_loss)
 
     #########################
 
@@ -190,7 +188,11 @@ class MLPPolicyPG(MLPPolicy):
         # HINT1: query it with observation(s) to get the baseline value(s)
         # HINT2: see build_baseline_forward_pass (above) to see the tensor that we're interested in
         # HINT3: this will be very similar to how you implemented get_action (above)
-        return TODO
+        if len(obs.shape) > 1:
+            observation = obs
+        else:
+            observation = obs[None]
+        return self.sess.run(self.baseline_prediction, feed_dict={self.observations_pl: observation})
 
     def update(self, observations, acs_na, adv_n=None, acs_labels_na=None, qvals=None):
         assert(self.training, 'Policy must be created with training=True in order to perform training updates...')
@@ -198,10 +200,12 @@ class MLPPolicyPG(MLPPolicy):
         _, loss = self.sess.run([self.train_op, self.loss], feed_dict={self.observations_pl: observations, self.actions_pl: acs_na, self.adv_n: adv_n})
 
         if self.nn_baseline:
-            targets_n = (qvals - np.mean(qvals))/(np.std(qvals)+1e-8)
+            targets_n = (qvals - np.mean(qvals)) / (np.std(qvals) + 1e-8)
             # TODO: update the nn baseline with the targets_n
             # HINT1: run an op that you built in define_train_op
-            TODO
+            self.sess.run(self.baseline_update_op,
+                          feed_dict={
+                              self.targets_n: targets_n})
         return loss
 
 #####################################################
