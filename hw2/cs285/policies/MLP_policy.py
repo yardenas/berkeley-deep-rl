@@ -38,7 +38,7 @@ class MLPPolicy(BasePolicy):
             self.build_graph()
 
         # saver for policy variables that are not related to training
-        self.policy_vars = [v for v in tf.all_variables() if policy_scope in v.name and 'train' not in v.name]
+        self.policy_vars = [v for v in tf.global_variables() if policy_scope in v.name and 'train' not in v.name]
         self.policy_saver = tf.train.Saver(self.policy_vars, max_to_keep=None)
 
     ##################################
@@ -109,7 +109,6 @@ class MLPPolicy(BasePolicy):
     # query the neural net that's our 'policy' function, as defined by an mlp above
     # query the policy with observation(s) to get selected action(s)
     def get_action(self, obs):
-
         if len(obs.shape) > 1:
             observation = obs
         else:
@@ -205,7 +204,9 @@ class MLPPolicyPG(MLPPolicy):
             # HINT1: run an op that you built in define_train_op
             self.sess.run(self.baseline_update_op,
                           feed_dict={
-                              self.targets_n: targets_n})
+                              self.targets_n: targets_n,
+                              self.observations_pl: observations
+                          })
         return loss
 
 #####################################################

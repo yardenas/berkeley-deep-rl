@@ -115,7 +115,7 @@ class RL_Trainer(object):
             self.total_envsteps += envsteps_this_batch
 
             # relabel the collected obs with actions from a provided expert policy
-            if relabel_with_expert and itr>=start_relabel_with_expert:
+            if relabel_with_expert and itr >= start_relabel_with_expert:
                 paths = self.do_relabel_with_expert(expert_policy, paths)
 
             # add collected data to replay buffer
@@ -151,6 +151,19 @@ class RL_Trainer(object):
             envsteps_this_batch: the sum over the numbers of environment steps in paths
             train_video_paths: paths which also contain videos for visualization purposes
         """
+
+        # TODO decide whether to load training data or use
+        # HINT: depending on if it's the first iteration or not,
+            # decide whether to either
+                # load the data. In this case you can directly return as follows
+                # ``` return loaded_paths, 0, None ```
+
+                # collect data, batch_size is the number of transitions you want to collect.
+        if itr == 0 and load_initial_expertdata:
+            print(load_initial_expertdata)
+            with open(load_initial_expertdata, "rb") as f:
+                loaded_paths = pickle.load(f)
+            return loaded_paths, 0, None
         # TODO collect data to be used for training
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']

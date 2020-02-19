@@ -163,7 +163,7 @@ class PGAgent(BaseAgent):
         # 1) create a list of indices (t'): from 0 to T-1
 
         # 2) create a list where the entry at each index (t') is gamma^(t')
-        discounts = np.logspace(0, len(rewards), len(rewards), base=self.gamma)
+        discounts = np.logspace(0, len(rewards), len(rewards), base=self.gamma, endpoint=False)
         assert len(discounts) == len(rewards), "Discounts length is wrong."
 
         # 3) create a list where the entry at each index (t') is gamma^(t') * r_{t'}
@@ -193,8 +193,10 @@ class PGAgent(BaseAgent):
             # 1) create a list of indices (t'): goes from t to T-1
 
             # 2) create a list where the entry at each index (t') is gamma^(t'-t)
-            discounts = \
-                np.logspace(0, len(rewards) - start_time_index, len(rewards) - start_time_index, base=self.gamma)
+            discounts = np.logspace(
+                0, len(rewards) - start_time_index,
+                len(rewards) - start_time_index,
+                base=self.gamma, endpoint=False)
             # 3) create a list where the entry at each index (t') is gamma^(t'-t) * r_{t'}
             # Hint: remember that t' goes from t to T-1, so you should use the rewards from those indices as well
             assert len(discounts) == len(rewards[start_time_index:]),\

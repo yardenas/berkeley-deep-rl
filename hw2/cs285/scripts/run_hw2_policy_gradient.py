@@ -87,7 +87,7 @@ def main():
     
     # for this assignment, we train on everything we recently collected
     # so making train_batch_size=batch_size 
-    params['train_batch_size']=params['batch_size']
+    params['train_batch_size'] = params['batch_size']
 
     ##################################
     ### CREATE DIRECTORY FOR LOGGING

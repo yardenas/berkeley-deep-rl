@@ -44,6 +44,7 @@ def run_problem_3():
     for process in processes:
         process.wait()
 
+
 def vis_problem_3():
     # Collect data and summarize.
     folders = [folder for folder in glob.glob('cs285/data/*')]
@@ -73,17 +74,28 @@ def vis_problem_3():
     plt.show()
 
 
-def run_dagger():
+def run_problem_6():
     print("=========================================================\n"
-          "                     Running DAgger                      \n"
+          "                     Running Problem 6                   \n"
           "=========================================================")
+    command = 'python run_hw2_policy_gradient.py --env_name LunarLanderContinuous-v2 ' \
+              '--ep_len 1000 --discount 0.99 -n 100 -l 2 -s 64 -b 40000 -lr 0.005 -rtg' \
+              ' --nn_baseline --exp_name ll_b40000_r0.005'
+
+    process = subprocess.Popen(shlex.split(command))
+    process.wait()
+
+def vis_problem_6():
+    return
 
 
 def main(task):
     # Verify task
     tasks = {
         'problem-3': run_problem_3,
-        'vis-problem-3': vis_problem_3
+        'vis-problem-3': vis_problem_3,
+        'problem-6': run_problem_6,
+        'vis-problem-6': vis_problem_6
     }
     assert task in tasks.keys(), "Invalid task"
     tasks[task]()
