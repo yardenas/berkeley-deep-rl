@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib as plt
 import tensorflow as tf
 from .base_policy import BasePolicy
 from cs285.infrastructure.tf_utils import build_mlp
@@ -194,7 +193,7 @@ class MLPPolicyPG(MLPPolicy):
         return self.sess.run(self.baseline_prediction, feed_dict={self.observations_pl: observation})
 
     def update(self, observations, acs_na, adv_n=None, acs_labels_na=None, qvals=None):
-        assert(self.training, 'Policy must be created with training=True in order to perform training updates...')
+        assert self.training, 'Policy must be created with training=True in order to perform training updates...'
 
         _, loss = self.sess.run([self.train_op, self.loss], feed_dict={self.observations_pl: observations, self.actions_pl: acs_na, self.adv_n: adv_n})
 

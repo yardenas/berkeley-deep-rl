@@ -170,7 +170,7 @@ class PGAgent(BaseAgent):
         discounted_rewards = discounts * np.array(rewards, copy=False)
 
         # 4) calculate a scalar: sum_{t'=0}^{T-1} gamma^(t') * r_{t'}
-        sum_of_discounted_rewards = sum(discounted_rewards)
+        sum_of_discounted_rewards = np.sum(discounted_rewards)
 
         # 5) create a list of length T-1, where each entry t contains that scalar
         list_of_discounted_returns = [sum_of_discounted_rewards] * len(rewards)
@@ -203,7 +203,7 @@ class PGAgent(BaseAgent):
                 "Discounts and rewards-to-go lengths should match."
             discounted_rtg = discounts * np.array(rewards[start_time_index:], copy=False)
             # 4) calculate a scalar: sum_{t'=t}^{T-1} gamma^(t'-t) * r_{t'}
-            sum_discounted_rtg = sum(discounted_rtg)
+            sum_discounted_rtg = np.sum(discounted_rtg)
 
             # appending each of these calculated sums into the list to return
             all_discounted_cumsums.append(sum_discounted_rtg)
