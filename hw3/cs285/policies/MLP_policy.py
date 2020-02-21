@@ -183,7 +183,6 @@ class MLPPolicyPG(MLPPolicy):
     #########################
 
     def run_baseline_prediction(self, obs):
-
         # TODO: query the neural net that's our 'baseline' function, as defined by an mlp above
         # HINT1: query it with observation(s) to get the baseline value(s)
         # HINT2: see build_baseline_forward_pass (above) to see the tensor that we're interested in
