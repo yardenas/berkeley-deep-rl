@@ -29,11 +29,11 @@ def run_problem_4():
     commands = ['python run_hw3_actor_critic.py --env_name CartPole-v0 -n 100'
                 ' -b 1000 --exp_name 1_1 -ntu 1 -ngsptu 1',
                 'python run_hw3_actor_critic.py --env_name CartPole-v0 -n 100'
-                ' -b 1000 --exp_name 1_1 -ntu 100 -ngsptu 1',
+                ' -b 1000 --exp_name 100_1 -ntu 100 -ngsptu 1',
                 'python run_hw3_actor_critic.py --env_name CartPole-v0 -n 100'
-                ' -b 1000 --exp_name 1_1 -ntu 1 -ngsptu 100',
+                ' -b 1000 --exp_name 1_100 -ntu 1 -ngsptu 100',
                 'python run_hw3_actor_critic.py --env_name CartPole-v0 -n 100'
-                ' -b 1000 --exp_name 1_1 -ntu 10 -ngsptu 10']
+                ' -b 1000 --exp_name 10_10 -ntu 10 -ngsptu 10']
 
     # Launch commands and await until both done.
     processes = [subprocess.Popen(shlex.split(command)) for command in commands]
@@ -41,52 +41,28 @@ def run_problem_4():
         process.wait()
 
 
-def vis_problem_4():
-    # Collect data and summarize.
-    folders = [folder for folder in glob.glob('cs285/data/*')]
-    lb_results = defaultdict(lambda: defaultdict(list))
-    sb_results = defaultdict(lambda: defaultdict(list))
-    for folder in folders:
-        if 'lb_' in folder:
-            for i in range(100):
-                metric_file = os.path.join(folder, 'metrics_{}.json'.format(i))
-                with open(metric_file, 'r') as file:
-                    logs = json.load(file)
-                    lb_results[folder]['Eval_AverageReturn'].append(logs['Eval_AverageReturn'])
-                    lb_results[folder]['Eval_StdReturn'].append(logs['Eval_StdReturn'])
-        elif 'sb_' in folder:
-            for i in range(100):
-                metric_file = os.path.join(folder, 'metrics_{}.json'.format(i))
-                with open(metric_file, 'r') as file:
-                    logs = json.load(file)
-                    sb_results[folder]['Eval_AverageReturn'].append(logs['Eval_AverageReturn'])
-                    sb_results[folder]['Eval_StdReturn'].append(logs['Eval_StdReturn'])
-    plt.figure(1)
-    for folder, item in sb_results.items():
-        plot_mean_std(item['Eval_AverageReturn'], item['Eval_StdReturn'], label=folder)
-    plt.figure(2)
-    for folder, item in lb_results.items():
-        plot_mean_std(item['Eval_AverageReturn'], item['Eval_StdReturn'], label=folder)
-    plt.show()
-
-
-def run_problem_6():
+def run_problem_5():
     print("=========================================================\n"
-          "                     Running Problem 6                   \n"
+          "               Running Problem 5                         \n"
           "=========================================================")
-    command = 'python run_hw2_policy_gradient.py --env_name LunarLanderContinuous-v2 ' \
-              '--ep_len 1000 --discount 0.99 -n 100 -l 2 -s 64 -b 40000 -lr 0.005 -rtg' \
-              ' --nn_baseline --exp_name ll_b40000_r0.005'
+    commands = ['python run_hw3_actor_critic.py --env_name InvertedPendulum-v2'
+                ' --ep_len 1000 --discount 0.95 -n 100 -l 2 -s 64 -b 5000 -lr 0.01'
+                ' --exp_name inverted_pendulum -ntu 10 -ngsptu 10 --video_log_freq 10',
+                'python run_hw3_actor_critic.py --env_name HalfCheetah-v2'
+                ' --ep_len 150 --discount 0.90 --scalar_log_freq 1 -n 150 -l 2'
+                ' -s 32 -b 30000 -eb 1500 -lr 0.02 --exp_name half_cheetah -ntu 10'
+                ' -ngsptu 10 --video_log_freq 10']
+    # Launch commands and await until both done.
+    processes = [subprocess.Popen(shlex.split(command)) for command in commands]
+    for process in processes:
+        process.wait()
 
-    process = subprocess.Popen(shlex.split(command))
-    process.wait()
 
 def main(task):
     # Verify task
     tasks = {
         'problem-4': run_problem_4,
-        'vis-problem-4': vis_problem_4,
-
+        'problem-5': run_problem_5
     }
     assert task in tasks.keys(), "Invalid task"
     tasks[task]()

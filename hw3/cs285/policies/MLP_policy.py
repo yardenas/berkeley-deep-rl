@@ -167,7 +167,6 @@ class MLPPolicyPG(MLPPolicy):
         # but the equation above is something that should be maximized
 
         self.loss = tf.reduce_mean(tf.negative(tf.multiply(self.logprob_n, self.adv_n)))
-
         # TODO: define what exactly the optimizer should minimize when updating the policy
         self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
@@ -195,7 +194,6 @@ class MLPPolicyPG(MLPPolicy):
 
     def update(self, observations, acs_na, adv_n=None, acs_labels_na=None, qvals=None):
         assert self.training, 'Policy must be created with training=True in order to perform training updates...'
-
         _, loss = self.sess.run([self.train_op, self.loss],
                                 feed_dict={self.observations_pl: observations, self.actions_pl: acs_na,
                                            self.adv_n: adv_n})
@@ -223,5 +221,5 @@ class MLPPolicyAC(MLPPolicyPG):
     """
     def __init__(self, *args, **kwargs):
         if 'nn_baseline' in kwargs.keys():
-            assert kwargs['nn_baseline'] == False, "MLPPolicyAC should not use the nn_baseline flag"
+            assert kwargs['nn_baseline'] is False, "MLPPolicyAC should not use the nn_baseline flag"
         super().__init__(*args, **kwargs)

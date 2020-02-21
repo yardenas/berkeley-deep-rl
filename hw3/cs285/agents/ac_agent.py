@@ -46,7 +46,7 @@ class ACAgent(BaseAgent):
             "Shape of returns is different than rewards."
         assert next_returns_n.shape == terminal_n.shape, \
             "Shape of returns is different than terminals."
-        adv_n = re_n + self.gamma * terminal_n * next_returns_n - returns_n
+        adv_n = re_n + self.gamma * (1 - terminal_n) * next_returns_n - returns_n
         if self.standardize_advantages:
             adv_n = (adv_n - np.mean(adv_n)) / (np.std(adv_n) + 1e-8)
         return adv_n

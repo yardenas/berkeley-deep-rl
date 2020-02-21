@@ -269,7 +269,7 @@ class RL_Trainer(object):
         eval_paths, eval_envsteps_this_batch = sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
 
         # save eval rollouts as videos in tensorboard event file
-        if self.log_video and train_video_paths is not None:
+        if self.logvideo and train_video_paths is not None:
             print('\nCollecting video rollouts eval')
             eval_video_paths = sample_n_trajectories(self.env, eval_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
             # save train/eval videos

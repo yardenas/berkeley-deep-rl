@@ -80,11 +80,7 @@ class BootstrappedContinuousCritic(BaseCritic):
     def forward(self, ob):
         # TODO: run your critic
         # HINT: there's a neural network structure defined above with mlp layers, which serves as your 'critic'
-        if len(ob.shape) > 1:
-            observation = ob
-        else:
-            observation = ob[None]
-        return self.sess.run(self.critic_prediction, feed_dict={self.sy_ob_no: observation})
+        return self.sess.run(self.critic_prediction, feed_dict={self.sy_ob_no: ob})
 
     def update(self, ob_no, next_ob_no, re_n, terminal_n):
         """
@@ -128,7 +124,7 @@ class BootstrappedContinuousCritic(BaseCritic):
                     "Shape of returns is different than rewards."
                 assert next_returns_n.shape == terminal_n.shape,\
                     "Shape of returns is different than terminals."
-                targets = re_n + self.gamma * next_returns_n * terminal_n
+                targets = re_n + self.gamma * next_returns_n * (1 - terminal_n)
             _, loss = self.sess.run([self.critic_update_op, self.critic_loss], feed_dict={
                 self.sy_ob_no: ob_no,
                 self.sy_target_n: targets
