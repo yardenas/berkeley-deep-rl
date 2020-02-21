@@ -16,7 +16,10 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
         if render:
             if 'rgb_array' in render_mode:
                 if hasattr(env, 'sim'):
-                    image_obs.append(env.sim.render(camera_name='track', height=500, width=500)[::-1])
+                    if 'track' in env.env.model.camera_names:
+                        image_obs.append(env.sim.render(camera_name='track', height=500, width=500)[::-1])
+                    else:
+                        image_obs.append(env.sim.render(height=500, width=500)[::-1])
                 else:
                     image_obs.append(env.render(mode=render_mode))
             if 'human' in render_mode:
@@ -53,8 +56,10 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
     timesteps_this_batch = 0
     paths = []
     while timesteps_this_batch < min_timesteps_per_batch:
-        paths.append(sample_trajectory(env, policy, max_path_length, render, render_mode))
-        timesteps_this_batch += get_pathlength(paths[-1])
+        path = sample_trajectory(env, policy, max_path_length, render, render_mode)
+        paths.append(path)
+        timesteps_this_batch += get_pathlength(path)
+
     return paths, timesteps_this_batch
 
 def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False, render_mode=('rgb_array')):
@@ -77,10 +82,10 @@ def Path(obs, image_obs, acs, rewards, next_obs, terminals):
     """
     if image_obs != []:
         image_obs = np.stack(image_obs, axis=0)
-    return {"observation" : np.array(obs, dtype=np.float32),
-            "image_obs" : np.array(image_obs, dtype=np.uint8),
-            "reward" : np.array(rewards, dtype=np.float32),
-            "action" : np.array(acs, dtype=np.float32),
+    return {"observation": np.array(obs, dtype=np.float32),
+            "image_obs": np.array(image_obs, dtype=np.uint8),
+            "reward": np.array(rewards, dtype=np.float32),
+            "action": np.array(acs, dtype=np.float32),
             "next_observation": np.array(next_obs, dtype=np.float32),
             "terminal": np.array(terminals, dtype=np.float32)}
 

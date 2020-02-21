@@ -111,8 +111,7 @@ class RL_Trainer(object):
         self.start_time = time.time()
 
         for itr in range(n_iter):
-            #print("\n\n********** Iteration %i ************"%itr)
-
+            print("\n\n********** Iteration %i ************" % itr)
             # decide if videos should be rendered/logged at this iteration
             if itr % self.params['video_log_freq'] == 0 and self.params['video_log_freq'] != -1:
                 self.logvideo = True
@@ -135,12 +134,13 @@ class RL_Trainer(object):
                 train_video_paths = None
                 paths = None
             else:
-                paths, envsteps_this_batch, train_video_paths = self.collect_training_trajectories(itr, initial_expertdata, collect_policy, self.params['batch_size'])
+                paths, envsteps_this_batch, train_video_paths = self.collect_training_trajectories(
+                    itr, initial_expertdata, collect_policy, self.params['batch_size'])
 
             self.total_envsteps += envsteps_this_batch
 
             # relabel the collected obs with actions from a provided expert policy
-            if relabel_with_expert and itr>=start_relabel_with_expert:
+            if relabel_with_expert and itr >= start_relabel_with_expert:
                 paths = self.do_relabel_with_expert(expert_policy, paths)
 
             # add collected data to replay buffer
@@ -191,7 +191,6 @@ class RL_Trainer(object):
             with open(load_initial_expertdata, 'rb') as f:
                 paths = pickle.load(f)
             return paths, 0, None
-
         # TODO collect data to be used for training
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
@@ -270,7 +269,7 @@ class RL_Trainer(object):
         eval_paths, eval_envsteps_this_batch = sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
 
         # save eval rollouts as videos in tensorboard event file
-        if self.logvideo and train_video_paths != None:
+        if self.log_video and train_video_paths is not None:
             print('\nCollecting video rollouts eval')
             eval_video_paths = sample_n_trajectories(self.env, eval_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
             # save train/eval videos
@@ -303,11 +302,11 @@ class RL_Trainer(object):
             logs["TimeSinceStart"] = time.time() - self.start_time
             if isinstance(loss, dict) and loss is not None:
                 logs.update(loss)
-            else:
+            elif loss is not None:
                 logs["Training loss"] = loss
             if itr == 0:
-                initial_return = np.mean(train_returns)
-            logs["Initial_DataCollection_AverageReturn"] = initial_return
+                self.initial_return = np.mean(train_returns)
+            logs["Initial_DataCollection_AverageReturn"] = self.initial_return
             # perform the logging
             for key, value in logs.items():
                 print('{} : {}'.format(key, value))
