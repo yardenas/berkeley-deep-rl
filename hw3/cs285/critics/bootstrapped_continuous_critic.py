@@ -2,6 +2,7 @@ from .base_critic import BaseCritic
 import tensorflow as tf
 from cs285.infrastructure.tf_utils import build_mlp
 
+
 class BootstrappedContinuousCritic(BaseCritic):
     def __init__(self, sess, hparams):
         self.sess = sess
@@ -52,10 +53,10 @@ class BootstrappedContinuousCritic(BaseCritic):
         # TODO: set up the critic loss
         # HINT1: the critic_prediction should regress onto the targets placeholder (sy_target_n)
         # HINT2: use tf.losses.mean_squared_error
-        self.critic_loss = TODO
+        self.critic_loss = tf.losses.mean_squared_error(labels=self.sy_target_n, predictions=self.critic_prediction)
 
         # TODO: use the AdamOptimizer to optimize the loss defined above
-        self.critic_update_op = TODO
+        self.critic_update_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.critic_loss)
 
     def define_placeholders(self):
         """
@@ -79,7 +80,11 @@ class BootstrappedContinuousCritic(BaseCritic):
     def forward(self, ob):
         # TODO: run your critic
         # HINT: there's a neural network structure defined above with mlp layers, which serves as your 'critic'
-        return TODO
+        if len(ob.shape) > 1:
+            observation = ob
+        else:
+            observation = ob[None]
+        return self.sess.run(self.critic_prediction, feed_dict={self.sy_ob_no: observation})
 
     def update(self, ob_no, next_ob_no, re_n, terminal_n):
         """
@@ -116,7 +121,16 @@ class BootstrappedContinuousCritic(BaseCritic):
                 # HINT2: need to populate the following (in the feed_dict): 
                     #a) sy_ob_no with ob_no
                     #b) sy_target_n with target values calculated above
-        
-        TODO
-
+        for i in range(self.num_grad_steps_per_target_update * self.num_target_updates):
+            if i % self.num_grad_steps_per_target_update == 0:
+                next_returns_n = self.forward(next_ob_no)
+                assert next_returns_n.shape == re_n.shape,\
+                    "Shape of returns is different than rewards."
+                assert next_returns_n == terminal_n.shape,\
+                    "Shape of returns is different than terminals."
+                targets = re_n + self.gamma * next_returns_n * terminal_n
+            _, loss = self.sess.run([self.critic_update_op, self.critic_loss], feed_dict={
+                self.sy_ob_no: ob_no,
+                self.self.sy_target_n: targets
+            })
         return loss
