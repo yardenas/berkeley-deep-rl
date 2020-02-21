@@ -44,7 +44,7 @@ class ACAgent(BaseAgent):
         next_returns_n = self.critic.forward(next_ob_no)
         assert next_returns_n.shape == re_n.shape, \
             "Shape of returns is different than rewards."
-        assert next_returns_n == terminal_n.shape, \
+        assert next_returns_n.shape == terminal_n.shape, \
             "Shape of returns is different than terminals."
         adv_n = re_n + self.gamma * terminal_n * next_returns_n - returns_n
         if self.standardize_advantages:

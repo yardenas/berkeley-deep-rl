@@ -126,11 +126,11 @@ class BootstrappedContinuousCritic(BaseCritic):
                 next_returns_n = self.forward(next_ob_no)
                 assert next_returns_n.shape == re_n.shape,\
                     "Shape of returns is different than rewards."
-                assert next_returns_n == terminal_n.shape,\
+                assert next_returns_n.shape == terminal_n.shape,\
                     "Shape of returns is different than terminals."
                 targets = re_n + self.gamma * next_returns_n * terminal_n
             _, loss = self.sess.run([self.critic_update_op, self.critic_loss], feed_dict={
                 self.sy_ob_no: ob_no,
-                self.self.sy_target_n: targets
+                self.sy_target_n: targets
             })
         return loss
