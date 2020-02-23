@@ -70,13 +70,10 @@ class DQNAgent(object):
             # input that should be given to a Q network by appending some
             # previous frames.
             enc_last_obs = self.replay_buffer.encode_recent_observation()
-            print(enc_last_obs.shape, "shape before...")
             enc_last_obs = enc_last_obs[np.newaxis, :]
-            print(enc_last_obs.shape, "shape after...")
             # TODO query the policy with enc_last_obs to select action
             # We take action of index '0' to get the action of the latest frame.
             action = self.actor.get_action(enc_last_obs)
-            print(action.shape, "shape of actions.")
             action = action[0]
 
         # TODO take a step in the environment using the action from the policy
