@@ -175,7 +175,8 @@ class MLPPolicyPG(MLPPolicy):
             # HINT1: use tf.losses.mean_squared_error, similar to SL loss from hw1
             # HINT2: we want predictions (self.baseline_prediction) to be as close as possible to the labels (self.targets_n)
             # see 'update' function below if you don't understand what's inside self.targets_n
-            self.baseline_loss = tf.losses.mean_squared_error(self.targets_n, self.baseline_prediction)
+            self.baseline_loss = tf.losses.mean_squared_error(
+                labels=self.targets_n, predictions=self.baseline_prediction)
             # TODO: define what exactly the optimizer should minimize when updating the baseline
             self.baseline_update_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.baseline_loss)
 
