@@ -18,13 +18,12 @@ def calculate_mean_prediction_error(env, action_sequence, models, data_statistic
     pred_states = []
     for ac in action_sequence:
         pred_states.append(ob)
-        action = np.expand_dims(ac,0)
-        ob = # TODO(Q1) Get predicted next state using the model
+        action = np.expand_dims(ac, 0)
+        ob = model.get_prediction(ob, action, data_statistics)
     pred_states = np.squeeze(pred_states)
 
     # Calculate the mean prediction error here
-    mpe = # TODO(Q1)
-
+    mpe = mean_squared_error(pred_states, true_states)
     return mpe, true_states, pred_states
 
 def perform_actions(env, actions):
