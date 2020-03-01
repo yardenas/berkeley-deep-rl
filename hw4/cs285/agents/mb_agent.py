@@ -45,8 +45,9 @@ class MBAgent(BaseAgent):
         for i in range(self.ensemble_size):
             # select which datapoints to use for this model of the ensemble
             # you might find the num_data_per_ens variable defined above useful
-            observations, actions, _, next_observations, _ = \
-                self.sample(num_data_per_ens)
+            rand_indices = np.random.permutation(num_data)[:num_data_per_ens]
+            observations, actions, next_observations = \
+                ob_no[rand_indices], ac_na[rand_indices], next_ob_no[rand_indices]
             # use datapoints to update one of the dyn_models
             model = self.dyn_models[i]
             loss = model.update(observations, actions, next_observations, self.data_statistics)
@@ -55,10 +56,8 @@ class MBAgent(BaseAgent):
         return avg_loss
 
     def add_to_replay_buffer(self, paths, add_sl_noise=False):
-
         # add data to replay buffer
         self.replay_buffer.add_rollouts(paths, noised=add_sl_noise)
-
         # get updated mean/std of the data in our replay buffer
         self.data_statistics = {'obs_mean': np.mean(self.replay_buffer.obs, axis=0),
                                 'obs_std': np.std(self.replay_buffer.obs, axis=0),

@@ -77,7 +77,7 @@ def main():
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--use_gpu', '-gpu', action='store_true')
     parser.add_argument('--which_gpu', '-gpu_id', default=0)
-    parser.add_argument('--video_log_freq', type=int, default=1) #-1 to disable
+    parser.add_argument('--video_log_freq', type=int, default=-1) #-1 to disable
     parser.add_argument('--scalar_log_freq', type=int, default=1) #-1 to disable
     parser.add_argument('--save_params', action='store_true')
     args = parser.parse_args() 
@@ -86,12 +86,12 @@ def main():
     params = vars(args)
 
     # HARDCODE EPISODE LENGTHS FOR THE ENVS USED IN THIS MB ASSIGNMENT
-    if params['env_name']=='reacher-cs285-v0':
-        params['ep_len']=200
-    if params['env_name']=='cheetah-cs285-v0':
-        params['ep_len']=500
-    if params['env_name']=='obstacles-cs285-v0':
-        params['ep_len']=100
+    if params['env_name'] is 'reacher-cs285-v0':
+        params['ep_len'] = 200
+    if params['env_name'] is 'cheetah-cs285-v0':
+        params['ep_len'] = 500
+    if params['env_name'] is 'obstacles-cs285-v0':
+        params['ep_len'] = 100
 
     ##################################
     ### CREATE DIRECTORY FOR LOGGING

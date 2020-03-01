@@ -63,7 +63,7 @@ class FFModel(BaseModel):
         )
         self.delta_pred_unnormalized = unnormalize(
             self.delta_pred_normalized, self.delta_mean_pl, self.delta_std_pl)
-        self.next_obs_pred = self.delta_pred_unnormalized + obs_unnormalized
+        self.next_obs_pred = self.delta_pred_unnormalized + self.obs_pl
 
     def define_train_op(self):
 
@@ -105,6 +105,8 @@ class FFModel(BaseModel):
             self.acs_pl: actions,
             self.acs_mean_pl: data_statistics['acs_mean'],
             self.acs_std_pl: data_statistics['acs_std'],
+            self.delta_mean_pl: data_statistics['delta_mean'],
+            self.delta_std_pl: data_statistics['delta_std'],
             self.delta_labels: next_observations - observations
         })
         return loss

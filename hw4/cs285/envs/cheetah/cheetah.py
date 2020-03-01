@@ -67,7 +67,7 @@ class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.reward_dict['foot'] = front_foot_rew
 
         # total reward
-        self.reward_dict['r_total'] = self.reward_dict['run'] +  self.reward_dict['leg'] + self.reward_dict['shin'] + self.reward_dict['foot']
+        self.reward_dict['r_total'] = self.reward_dict['run'] + self.reward_dict['leg'] + self.reward_dict['shin'] + self.reward_dict['foot']
 
         #return
         dones = zeros.copy()
